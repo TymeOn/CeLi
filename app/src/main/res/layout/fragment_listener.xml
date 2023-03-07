@@ -14,6 +14,7 @@
         app:layout_constraintBottom_toTopOf="@id/listen_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:gravity="center"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button

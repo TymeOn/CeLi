@@ -18,4 +18,6 @@
     <string name="music_cover_cd">Music Cover</string>
     <string name="music_title_text">Music title</string>
     <string name="play_button_cd">TODO</string>
+    <string name="permission_granted_text">Permission Granted</string>
+    <string name="permission_denied_text">Permission Denied</string>
 </resources>
