@@ -100,7 +100,6 @@ public class ListenerFragment extends Fragment {
 
             @Override
             public void onError(int i) {
-                listenButton.setText(getString(R.string.listen_button_text_stop));
             }
 
             @Override
@@ -124,15 +123,14 @@ public class ListenerFragment extends Fragment {
                     {
                         speechRecognizer.startListening(speechRecognizerIntent);
                         listening = !listening;
-                        listenButton.setText(getString(R.string.listen_button_text_start));
                     }
 
                     if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
                     {
+                        speechRecognizer.stopListening();
                         listening = !listening;
                         listenButton.setText(getString(R.string.listen_button_text_stop));
                         helpText.setHint(getString(R.string.help_label_text));
-                        speechRecognizer.stopListening();
                     }
 
                     return false;
