@@ -18,5 +18,5 @@
     <string name="music_cover_cd">Music Cover</string>
     <string name="music_title_text">Music title</string>
     <string name="time_zero">0:00</string>
-    <string name="play_pause_button_cd">TODO</string>
+    <string name="play_pause_button_cd">Play/Pause Button</string>
 </resources>

@@ -4,19 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/dark_primary"
     android:gravity="center"
     android:orientation="vertical"
     tools:context=".PlayerFragment">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <ImageButton
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"
         android:layout_marginStart="@dimen/fab_margin"
         android:layout_marginTop="@dimen/fab_margin"
+        android:background="@drawable/round_button"
         android:contentDescription="@string/back_button_cd"
-        app:srcCompat="@drawable/ic_baseline_arrow_back_24" />
+        android:padding="15dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_baseline_arrow_back_24" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,21 +28,34 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/music_cover"
-            android:layout_width="325dp"
-            android:layout_height="325dp"
-            android:layout_marginTop="48dp"
-            android:contentDescription="@string/music_cover_cd"
-            android:src="@drawable/cover"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize10Percent" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_gradient"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/music_cover"
+                android:layout_width="325dp"
+                android:layout_height="325dp"
+                android:contentDescription="@string/music_cover_cd"
+                android:padding="2dp"
+                android:src="@drawable/cover"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize10Percent"
+                app:strokeColor="@color/light_primary"
+                app:strokeWidth="2dp" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/music_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:fontFamily="@font/rajdhani_regular"
             android:text="@string/music_title_text"
+            android:textColor="@color/text"
             android:textSize="26sp" />
 
         <LinearLayout
@@ -52,7 +69,9 @@
                 android:id="@+id/current_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/rajdhani_bold"
                 android:text="@string/time_zero"
+                android:textColor="@color/text"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -63,18 +82,20 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
+                android:backgroundTint="#d1f7ff"
                 android:progress="0" />
 
             <TextView
                 android:id="@+id/total_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/rajdhani_bold"
                 android:text="@string/time_zero"
+                android:textColor="@color/text"
                 android:textSize="18sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
         </LinearLayout>
-
 
         <ImageButton
             android:id="@+id/play_pause_button"
