@@ -42,6 +42,6 @@
         app:rb_duration="3000"
         app:rb_radius="32dp"
         app:rb_rippleAmount="4"
-        app:rb_scale="6"></com.skyfishjy.library.RippleBackground>
+        app:rb_scale="6" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
