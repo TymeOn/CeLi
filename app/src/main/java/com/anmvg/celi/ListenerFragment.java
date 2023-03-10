@@ -10,12 +10,13 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.anmvg.celi.databinding.FragmentListenerBinding;
-import com.bumptech.glide.Glide;
+import com.skyfishjy.library.RippleBackground;
 
 public class ListenerFragment extends Fragment {
 
     private FragmentListenerBinding binding;
     private boolean listening;
+    private RippleBackground rippleBg;
 
     @Override
     public View onCreateView(
@@ -29,17 +30,18 @@ public class ListenerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Glide.with(view)
-                .load(R.drawable.sound_listen)
-                .into(binding.loadingImage);
-        binding.loadingImage.setVisibility(View.INVISIBLE);
+        rippleBg = binding.rippleBg;
 
         binding.listenButton.setOnClickListener(view1 -> {
             listening = !listening;
             binding.listenButton.setText(listening ? getString(R.string.listen_button_text_stop) : getString(R.string.listen_button_text_start));
-            binding.loadingImage.setVisibility(listening ? View.VISIBLE : View.INVISIBLE);
+            if (listening) {
+                rippleBg.startRippleAnimation();
+            } else {
+                rippleBg.stopRippleAnimation();
+            }
             NavHostFragment.findNavController(ListenerFragment.this)
-                .navigate(R.id.action_ListenerFragment_to_PlayerFragment);
+                    .navigate(R.id.action_ListenerFragment_to_PlayerFragment);
         });
     }
 
