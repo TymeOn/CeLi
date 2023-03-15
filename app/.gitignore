@@ -101,6 +101,7 @@ lint/tmp/
 .cxx
 local.properties
 
-# IDE Files
+#IDE FILES
 .idea
+.vscode
 
