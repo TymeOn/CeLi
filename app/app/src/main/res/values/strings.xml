@@ -19,4 +19,8 @@
     <string name="music_title_text">Music title</string>
     <string name="time_zero">0:00</string>
     <string name="play_pause_button_cd">Play/Pause Button</string>
+    <string name="permission_granted_text">Permission Granted</string>
+    <string name="permission_denied_text">Permission Denied</string>
+    <string name="press_stop">Appuyez pour arrêter</string>
+    <string name="press_talk">Appuyez et parlez</string>
 </resources>
