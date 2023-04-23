@@ -136,3 +136,8 @@ dist
 # Certs
 *.pem
 
+# Vosk models
+resources/models
+
+# Files
+resources/song
