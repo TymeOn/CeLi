@@ -1,4 +1,4 @@
-import fs, { unlink } from 'fs';
+import fs from 'fs';
 import cors from 'cors';
 import https from 'https';
 import dotenv from 'dotenv';
@@ -7,7 +7,6 @@ import vosk from 'vosk';
 import { Readable }from 'stream';
 import wav from 'wav';
 import { exec } from 'child_process';
-
 
 // GENERAL SETUP
 // ---------
@@ -22,7 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-const MODEL_PATH = "resources/vosk-model-fr-0.22"
+const MODEL_PATH = "resources/models/vosk-model-fr-0.22"
 const FILE_NAME = "resources/song/AudioRecordCeli"
 
 const options = {
@@ -30,16 +29,10 @@ const options = {
   cert: fs.readFileSync('keys/cert.pem')
 };
 
-
-
 // ROUTES
 // ------
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-  });
-
-app.get('/vosk', (req, res) => {
+app.get('/asr', (req, res) => {
 
     try 
     {
@@ -97,8 +90,6 @@ app.get('/vosk', (req, res) => {
                 console.log("File deleted!");
             });
 
-            
-            
             res.status(200).send(text);
         });
         
@@ -108,7 +99,8 @@ app.get('/vosk', (req, res) => {
         });
 });
 
-
+// UTILITY FUNCTIONS
+// 
 async function getBestTranscription(results) 
 {
     let confidence = 0;
