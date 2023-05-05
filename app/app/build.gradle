@@ -19,9 +19,11 @@ android {
     buildTypes {
         debug {
             buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
+            buildConfigField "String", "NLP_APP_ADDRESS", "\"http://192.168.1.56:6000\""
         }
         release {
             buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
+            buildConfigField "String", "NLP_APP_ADDRESS", "\"http://192.168.1.56:6000\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

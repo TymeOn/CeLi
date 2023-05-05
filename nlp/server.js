@@ -27,9 +27,10 @@ app.post('/nlp', (req, res) => {
 
     if (command.match(new RegExp('(' + process.env.COMMAND_WORDS + ')', 'g')) != null) {
         match = command.replace(new RegExp('.*(' + process.env.COMMAND_WORDS + ') (.*)', 'g'), '$2');
+        match = match.split(" ").join("-").toLowerCase();
     }
 
-    res.status(200).json({match});
+    res.status(200).json(match);
 });
 
 

@@ -92,7 +92,6 @@ public class ListenerFragment extends Fragment {
     ) {
         binding = FragmentListenerBinding.inflate(inflater, container, false);
         fileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "AudioRecordCeli.mp3";
-        uploadVoiceFile();
         return binding.getRoot();
     }
 
@@ -124,7 +123,7 @@ public class ListenerFragment extends Fragment {
             onRecord(listening);
 
             if (!listening) {
-                // TODO VOSK CALL
+                uploadVoiceFile();
             }
 //            NavHostFragment.findNavController(ListenerFragment.this)
 //                    .navigate(R.id.action_ListenerFragment_to_PlayerFragment);
@@ -289,13 +288,14 @@ public class ListenerFragment extends Fragment {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(@NonNull Call call, IOException e) {
-                Log.d("ASR - Upload", e.getMessage());
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.d("ASR-UPLOAD", e.getMessage());
                 call.cancel();
             }
 
             @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                Log.d("ASR-UPLOAD", response.message());
                 getASRText();
             }
         });
@@ -308,15 +308,41 @@ public class ListenerFragment extends Fragment {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(@NonNull Call call, IOException e) {
-                Log.d("ASR - Voice", e.getMessage());
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.d("ASR-VOICE", e.getMessage());
                 call.cancel();
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 final String responseText = Objects.requireNonNull(response.body()).string();
-                Log.d("ASR - Voice", responseText);
+                Log.d("ASR-VOICE", responseText);
+                getNLPMusicName(responseText);
+            }
+        });
+    }
+
+    void getNLPMusicName(String command) {
+        RequestBody formBody = new FormBody.Builder()
+                .add("command", command)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(BuildConfig.NLP_APP_ADDRESS + "/nlp")
+                .post(formBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.d("NLP", e.getMessage());
+                call.cancel();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                final String responseText = Objects.requireNonNull(response.body()).string();
+                Log.d("NLP", responseText);
             }
         });
     }
