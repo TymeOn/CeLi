@@ -33,6 +33,7 @@ const options = {
 // VARIABLES SETUP
 // 
 
+// Define the multer storage configuration
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
       callback(null, 'resources/song');
@@ -43,7 +44,7 @@ const storage = multer.diskStorage({
     }
 });
 
-
+// Define the multer upload filter configuration
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'audio/mpeg') {
       cb(null, true);
@@ -52,10 +53,25 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+// Define the multer upload configuration
 const upload = multer({ 
     storage: storage,
     fileFilter: fileFilter
 });
+
+// Define the error handling middleware function
+const handleError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      res.status(400).send({ message: 'Multer error: ' + err.message });
+    } else if (err) {
+      // An error occurred when uploading.
+      res.status(500).send({ message: err.message });
+    } else {
+      // Everything went fine.
+      next();
+    }
+  };
 
 // ROUTES
 // ------
@@ -127,9 +143,9 @@ app.get('/asr', (req, res) => {
         });
 });
 
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', upload.single('file'), handleError, (req, res) => {
     res.status(200).send('File uploaded successfully!');
-  });
+});
 
 // UTILITY FUNCTIONS
 // 
