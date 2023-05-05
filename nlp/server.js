@@ -21,14 +21,14 @@ app.use(express.urlencoded({ extended: true }));
 // ROUTES
 // ------
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-});
-
-app.post('/asr', (req, res) => {
+app.post('/nlp', (req, res) => {
     let command = req.body.command ? req.body.command : '';
-    var match = command.match(new RegExp(process.env.REGEX, "g"));
-    console.log(match);
+    let match = '';
+
+    if (command.match(new RegExp('(' + process.env.COMMAND_WORDS + ')', 'g')) != null) {
+        match = command.replace(new RegExp('.*(' + process.env.COMMAND_WORDS + ') (.*)', 'g'), '$2');
+    }
+
     res.status(200).json({match});
 });
 
