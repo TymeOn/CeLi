@@ -132,3 +132,12 @@ dist
 #IDE FILES
 .idea
 .vscode
+
+# Certs
+*.pem
+
+# Vosk models
+resources/models
+
+# Files
+resources/song
