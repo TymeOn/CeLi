@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.anmvg.celi.databinding.FragmentListenerBinding;
 import com.skyfishjy.library.RippleBackground;
@@ -123,10 +124,9 @@ public class ListenerFragment extends Fragment {
             onRecord(listening);
 
             if (!listening) {
+                binding.helpLabel.setText(getString(R.string.press_processing));
                 uploadVoiceFile();
             }
-//            NavHostFragment.findNavController(ListenerFragment.this)
-//                    .navigate(R.id.action_ListenerFragment_to_PlayerFragment);
         });
     }
 
@@ -290,6 +290,7 @@ public class ListenerFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.d("ASR-UPLOAD", e.getMessage());
+                requireActivity().runOnUiThread(() -> binding.helpLabel.setText(getString(R.string.press_talk)));
                 call.cancel();
             }
 
@@ -310,6 +311,7 @@ public class ListenerFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.d("ASR-VOICE", e.getMessage());
+                requireActivity().runOnUiThread(() -> binding.helpLabel.setText(getString(R.string.press_talk)));
                 call.cancel();
             }
 
@@ -336,6 +338,7 @@ public class ListenerFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.d("NLP", e.getMessage());
+                requireActivity().runOnUiThread(() -> binding.helpLabel.setText(getString(R.string.press_talk)));
                 call.cancel();
             }
 
@@ -343,6 +346,15 @@ public class ListenerFragment extends Fragment {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 final String responseText = Objects.requireNonNull(response.body()).string();
                 Log.d("NLP", responseText);
+                if (!responseText.isEmpty()) {
+                    requireActivity().runOnUiThread(() -> {
+                        binding.helpLabel.setText(getString(R.string.press_talk));
+                        Bundle bundle = new Bundle();
+                        bundle.putString("musicName", responseText);
+                        NavHostFragment.findNavController(ListenerFragment.this)
+                                .navigate(R.id.action_ListenerFragment_to_PlayerFragment, bundle);
+                    });
+                }
             }
         });
     }

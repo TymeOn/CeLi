@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -85,6 +86,9 @@ public class PlayerFragment extends Fragment {
             mediaPlayer.reset();
             prepareMediaPlayer();
         });
+
+        assert getArguments() != null;
+        Log.d("PLAYER", getArguments().getString("musicName"));
     }
 
     @Override

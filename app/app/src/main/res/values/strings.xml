@@ -23,4 +23,5 @@
     <string name="permission_denied_text">Permission Denied</string>
     <string name="press_stop">Appuyez pour arrêter</string>
     <string name="press_talk">Appuyez et parlez</string>
+    <string name="press_processing">Traitement en cours</string>
 </resources>
