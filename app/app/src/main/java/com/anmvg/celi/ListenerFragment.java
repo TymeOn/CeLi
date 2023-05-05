@@ -283,22 +283,41 @@ public class ListenerFragment extends Fragment {
                 .build();
 
         Request request = new Request.Builder()
-                .url("http://<IP>:5000/nlp")
+                .url(BuildConfig.ASR_APP_ADDRESS + "/upload")
                 .post(formBody)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, IOException e) {
+                Log.d("ASR - Upload", e.getMessage());
+                call.cancel();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                getASRText();
+            }
+        });
+    }
+
+    void getASRText() {
+        Request request = new Request.Builder()
+                .url(BuildConfig.ASR_APP_ADDRESS + "/asr")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, IOException e) {
+                Log.d("ASR - Voice", e.getMessage());
                 call.cancel();
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 final String responseText = Objects.requireNonNull(response.body()).string();
-                Log.d("ASR", responseText);
+                Log.d("ASR - Voice", responseText);
             }
         });
     }
-
 }
