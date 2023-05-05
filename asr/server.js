@@ -128,7 +128,7 @@ app.get('/asr', (req, res) => {
 });
 
 app.post('/upload', upload.single('file'), (req, res) => {
-    res.send('File uploaded successfully!');
+    res.status(200).send('File uploaded successfully!');
   });
 
 // UTILITY FUNCTIONS
