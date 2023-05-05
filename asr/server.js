@@ -1,6 +1,5 @@
 import fs from 'fs';
 import cors from 'cors';
-import https from 'https';
 import dotenv from 'dotenv';
 import express from 'express';
 import vosk from 'vosk';
@@ -24,11 +23,6 @@ app.use(cors());
 
 const MODEL_PATH = "resources/models/vosk-model-fr-0.22"
 const FILE_NAME = "resources/song/AudioRecordCeli"
-
-const options = {
-  key: fs.readFileSync('keys/key.pem'),
-  cert: fs.readFileSync('keys/cert.pem')
-};
 
 // VARIABLES SETUP
 // 
@@ -170,6 +164,6 @@ async function getBestTranscription(results)
 // STARTUP
 // -------
 
-https.createServer(options, app).listen(process.env.PORT_NODE, () => {
-    console.log('CreaPass app listening on port ' + process.env.PORT_NODE);
-  });
+app.listen(process.env.NODE_PORT, () => {
+    console.log('CeLi ASR app listening on port ' + process.env.NODE_PORT);
+});
