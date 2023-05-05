@@ -4,9 +4,10 @@ import https from 'https';
 import dotenv from 'dotenv';
 import express from 'express';
 import vosk from 'vosk';
-import { Readable }from 'stream';
+import { Readable } from 'stream';
 import wav from 'wav';
 import { exec } from 'child_process';
+import multer from 'multer';
 
 // GENERAL SETUP
 // ---------
@@ -28,6 +29,33 @@ const options = {
   key: fs.readFileSync('keys/key.pem'),
   cert: fs.readFileSync('keys/cert.pem')
 };
+
+// VARIABLES SETUP
+// 
+
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+      callback(null, 'resources/song');
+    },
+    
+    filename: (req, file, callback) => {
+      callback(null, file.originalname);
+    }
+});
+
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'audio/mpeg') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only mp3 files are allowed!'), false);
+    }
+};
+
+const upload = multer({ 
+    storage: storage,
+    fileFilter: fileFilter
+});
 
 // ROUTES
 // ------
@@ -99,8 +127,13 @@ app.get('/asr', (req, res) => {
         });
 });
 
+app.post('/upload', upload.single('file'), (req, res) => {
+    res.send('File uploaded successfully!');
+  });
+
 // UTILITY FUNCTIONS
 // 
+
 async function getBestTranscription(results) 
 {
     let confidence = 0;
