@@ -37,6 +37,6 @@ app.post('/nlp', (req, res) => {
 // -------
 
 app.listen(process.env.NODE_PORT, () => {
-    console.log('CeLi ASR app listening on port ' + process.env.NODE_PORT);
+    console.log('CeLi NLP app listening on port ' + process.env.NODE_PORT);
 });
   
