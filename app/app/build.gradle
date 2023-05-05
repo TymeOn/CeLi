@@ -17,7 +17,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
+        }
         release {
+            buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
