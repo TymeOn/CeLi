@@ -111,7 +111,13 @@ public class ListenerFragment extends Fragment {
         // Listen button behavior
         rippleBg = binding.rippleBg;
         binding.listenButton.setOnClickListener(view1 -> {
-            ((MainActivity)requireActivity()).sayHelloAsync();
+            Bundle bundle = new Bundle();
+            bundle.putString("musicName", "demain");
+            NavHostFragment.findNavController(ListenerFragment.this)
+                    .navigate(R.id.action_ListenerFragment_to_PlayerFragment, bundle);
+
+//            ((MainActivity)requireActivity()).sayHelloAsync();
+//
 //            listening = !listening;
 //            binding.listenButton.setText(listening ? getString(R.string.listen_button_text_stop) : getString(R.string.listen_button_text_start));
 //            binding.helpLabel.setText(listening ? getString(R.string.press_stop) : getString(R.string.press_talk));

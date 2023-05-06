@@ -1,12 +1,11 @@
 package com.anmvg.celi;
 
 import android.annotation.SuppressLint;
-import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -20,6 +19,10 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.anmvg.celi.databinding.FragmentPlayerBinding;
 
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
+
 
 public class PlayerFragment extends Fragment {
 
@@ -27,7 +30,10 @@ public class PlayerFragment extends Fragment {
     private TextView currentTime, totalTime;
     private SeekBar playerStatus;
     private ImageButton playPauseButton;
+    private LibVLC libVlc;
     private MediaPlayer mediaPlayer;
+    private Media media;
+    private boolean isPlaying = false;
     private Handler handler = new Handler();
 
     @Override
@@ -42,7 +48,9 @@ public class PlayerFragment extends Fragment {
         totalTime = binding.totalTime;
         playerStatus = binding.playerStatus;
         playPauseButton = binding.playPauseButton;
-        mediaPlayer = new MediaPlayer();
+
+        libVlc = new LibVLC(this.requireContext());
+        mediaPlayer = new MediaPlayer(libVlc);
 
         playerStatus.setMax(100);
 
@@ -57,34 +65,48 @@ public class PlayerFragment extends Fragment {
                 .navigate(R.id.action_PlayerFragment_to_ListenerFragment));
 
         playPauseButton.setOnClickListener(view1 -> {
-            if (mediaPlayer.isPlaying()) {
+            if (isPlaying) {
                 handler.removeCallbacks(updater);
                 mediaPlayer.pause();
                 playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
             } else {
-                mediaPlayer.start();
+                mediaPlayer.play();
                 playPauseButton.setImageResource(R.drawable.ic_baseline_pause_24);
-                updatePlayerStatus();
             }
         });
 
         prepareMediaPlayer();
 
-        playerStatus.setOnTouchListener((view1, motionEvent) -> {
-            int playPosition = (mediaPlayer.getDuration() / 100) * playerStatus.getProgress();
-            mediaPlayer.seekTo(playPosition);
-            currentTime.setText(millisecondsToTimer(mediaPlayer.getCurrentPosition()));
-            return false;
-        });
+//        playerStatus.setOnTouchListener((view1, motionEvent) -> {
+//            int playPosition = ((int)mediaPlayer.getLength() / 100) * playerStatus.getProgress();
+//            mediaPlayer.navigate(playPosition);
+//            currentTime.setText(millisecondsToTimer((long) mediaPlayer.getPosition()));
+//            return false;
+//        });
 
-        mediaPlayer.setOnBufferingUpdateListener((mediaPlayer, i) -> playerStatus.setSecondaryProgress(i));
-
-        mediaPlayer.setOnCompletionListener(mediaPlayer -> {
-            playerStatus.setProgress(0);
-            playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
-            currentTime.setText(R.string.time_zero);
-            mediaPlayer.reset();
-            prepareMediaPlayer();
+        mediaPlayer.setEventListener(event -> {
+            switch (event.type) {
+                case MediaPlayer.Event.Playing:
+                    isPlaying = true;
+                    updatePlayerStatus();
+                    break;
+                case MediaPlayer.Event.Paused:
+                case MediaPlayer.Event.Stopped:
+                    isPlaying = false;
+                    break;
+                case MediaPlayer.Event.EndReached:
+                    playerStatus.setProgress(0);
+                    playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
+                    currentTime.setText(R.string.time_zero);
+                    mediaPlayer.setTime(0);
+                    prepareMediaPlayer();
+                    break;
+                case MediaPlayer.Event.Buffering:
+                    playerStatus.setSecondaryProgress((int) event.getBuffering());
+                    break;
+                default:
+                    break;
+            }
         });
 
         assert getArguments() != null;
@@ -101,9 +123,10 @@ public class PlayerFragment extends Fragment {
 
     private void prepareMediaPlayer() {
         try {
-            mediaPlayer.setDataSource("https://filesamples.com/samples/audio/mp3/sample2.mp3");
-            mediaPlayer.prepare();
-            totalTime.setText(millisecondsToTimer(mediaPlayer.getDuration()));
+            media = new Media(libVlc, Uri.parse("rtsp://192.168.1.56:4000/SOUP"));
+            mediaPlayer.setMedia(media);
+            media.parse(Media.Parse.FetchNetwork);
+            totalTime.setText(millisecondsToTimer(media.getDuration()));
         } catch (Exception e) {
             Toast.makeText(this.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
@@ -113,14 +136,14 @@ public class PlayerFragment extends Fragment {
         @Override
         public void run() {
             updatePlayerStatus();
-            long currentDuration = mediaPlayer.getCurrentPosition();
+            long currentDuration = mediaPlayer.getTime();
             currentTime.setText(millisecondsToTimer(currentDuration));
         }
     };
 
     private void updatePlayerStatus() {
-        if (mediaPlayer.isPlaying()) {
-            playerStatus.setProgress((int) (((float) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()) * 100));
+        if (isPlaying) {
+            // playerStatus.setProgress((int) ((mediaPlayer.getTime() / media.getDuration()) * 100));
             handler.postDelayed(updater, 1000);
         }
     }

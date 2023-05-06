@@ -60,4 +60,6 @@ dependencies {
 
     implementation 'com.zeroc:ice:3.7.8'
     implementation "com.zeroc:icessl:3.7.8"
+
+    implementation 'org.videolan.android:libvlc-all:3.4.4'
 }
