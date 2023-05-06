@@ -31,6 +31,7 @@ import com.skyfishjy.library.RippleBackground;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -80,7 +81,7 @@ public class ListenerFragment extends Fragment {
     private MediaRecorder recorder = null;
 
     // HTTP requests client
-    private final OkHttpClient client = new OkHttpClient();
+    private OkHttpClient client;
 
 
     // BASIC VIEW FUNCTIONS
@@ -93,6 +94,12 @@ public class ListenerFragment extends Fragment {
     ) {
         binding = FragmentListenerBinding.inflate(inflater, container, false);
         fileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "AudioRecordCeli.mp3";
+
+        client = new OkHttpClient.Builder()
+            .connectTimeout(40000, TimeUnit.MILLISECONDS)
+            .readTimeout(40000, TimeUnit.MILLISECONDS)
+            .build();
+
         return binding.getRoot();
     }
 
@@ -344,7 +351,8 @@ public class ListenerFragment extends Fragment {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                final String responseText = Objects.requireNonNull(response.body()).string();
+                final String responseString = Objects.requireNonNull(response.body()).string();
+                String responseText = responseString.replace("\"", "");
                 Log.d("NLP", responseText);
                 if (!responseText.isEmpty()) {
                     requireActivity().runOnUiThread(() -> {
