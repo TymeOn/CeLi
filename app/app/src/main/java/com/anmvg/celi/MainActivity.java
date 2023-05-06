@@ -1,5 +1,6 @@
 package com.anmvg.celi;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.ActionBar;
@@ -12,19 +13,48 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.anmvg.celi.databinding.ActivityMainBinding;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.anmvg.celi.Demo.*;
+import com.zeroc.Ice.Communicator;
+import com.zeroc.Ice.Connection;
+import com.zeroc.Ice.InitializationData;
+import com.zeroc.Ice.InvocationFuture;
+import com.zeroc.Ice.LocalException;
+import com.zeroc.Ice.ObjectPrx;
+import com.zeroc.Ice.Util;
+
+import java.util.concurrent.CompletableFuture;
+
 
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
+
+    // ICE VARIABLES
+
+    public static final int MSG_READY = 1;
+    public static final int MSG_EXCEPTION = 2;
+    public static final int MSG_RESPONSE = 3;
+    public static final int MSG_SENDING = 4;
+    public static final int MSG_SENT = 5;
+    private Handler _uiHandler;
+    private Communicator _communicator;
+    private HelloPrx _proxy = null;
+    private InvocationFuture<?> _result;
+    private DeliveryMode _resultMode;
+    private final DeliveryMode _mode = DeliveryMode.TWOWAY;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        com.anmvg.celi.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
@@ -36,6 +66,73 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+        // ICE INITIALIZATION
+
+        _uiHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message m) {
+                if(m.what == MSG_READY) {
+                    MessageReady ready = (MessageReady)m.obj;
+                    _communicator = ready.communicator;
+                }
+                else if(m.what == MSG_EXCEPTION || m.what == MSG_RESPONSE) {
+                    _result = null;
+                }
+            }
+        };
+
+        // SSL initialization can take some time. To avoid blocking the
+        // calling thread, we perform the initialization in a separate thread.
+        new Thread(() -> {
+            try
+            {
+                InitializationData initData = new InitializationData();
+
+                initData.dispatcher = (Runnable runnable, Connection connection) -> _uiHandler.post(runnable);
+
+                initData.properties = Util.createProperties();
+                initData.properties.setProperty("Ice.Trace.Network", "3");
+
+                initData.properties.setProperty("IceSSL.Trace.Security", "3");
+                initData.properties.setProperty("IceSSL.KeystoreType", "BKS");
+                initData.properties.setProperty("IceSSL.TruststoreType", "BKS");
+                initData.properties.setProperty("IceSSL.Password", "password");
+                initData.properties.setProperty("Ice.Plugin.IceSSL", "com.zeroc.IceSSL.PluginFactory");
+                initData.properties.setProperty("Ice.Default.Package", "com.anmvg.celi");
+
+                //
+                // We need to postpone plug-in initialization so that we can configure IceSSL
+                // with a resource stream for the certificate information.
+                //
+                initData.properties.setProperty("Ice.InitPlugins", "0");
+
+                Communicator c = Util.initialize(initData);
+
+                //
+                // Now we complete the plug-in initialization.
+                //
+                com.zeroc.IceSSL.Plugin plugin = (com.zeroc.IceSSL.Plugin)c.getPluginManager().getPlugin("IceSSL");
+                //
+                // Be sure to pass the same input stream to the SSL plug-in for
+                // both the keystore and the truststore. This makes startup a
+                // little faster since the plug-in will not initialize
+                // two keystores.
+                //
+                java.io.InputStream certs = getResources().openRawResource(R.raw.client);
+                plugin.setKeystoreStream(certs);
+                plugin.setTruststoreStream(certs);
+                c.getPluginManager().initializePlugins();
+
+                _uiHandler.sendMessage(Message.obtain(_uiHandler, MSG_READY, new MessageReady(c, null)));
+            }
+            catch(LocalException e)
+            {
+                e.printStackTrace();
+                _uiHandler.sendMessage(Message.obtain(_uiHandler, MSG_READY, new MessageReady(null, e)));
+            }
+        }).start();
+
     }
 
     @Override
@@ -66,4 +163,85 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        if(_communicator != null)
+        {
+            _communicator.destroy();
+        }
+    }
+
+
+    // ICE FUNCTIONS
+
+    static class MessageReady {
+        MessageReady(Communicator c, LocalException e) {
+            communicator = c;
+            ex = e;
+        }
+
+        Communicator communicator;
+        LocalException ex;
+    }
+
+    static class BooleanHolder {
+        boolean value;
+    }
+
+    void sayHelloAsync() {
+        try {
+            updateProxy();
+            if(_proxy == null || _result != null) {
+                return;
+            }
+
+            _resultMode = _mode;
+            final BooleanHolder response = new BooleanHolder();
+            _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_SENDING));
+            CompletableFuture<Void> r = _proxy.sayHelloAsync(0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                r.whenComplete((result, ex) -> {
+                    // There is no ordering guarantee between sent, response/exception.
+                    response.value = true;
+                    if(ex != null) {
+                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_EXCEPTION, ex));
+                    }
+                    else {
+                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_RESPONSE));
+                    }
+                });
+            }
+
+            _result = Util.getInvocationFuture(r);
+            _result.whenSent((sentSynchronously, ex) -> {
+                if(ex == null) {
+                    if(_resultMode.isOneway()) {
+                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_RESPONSE));
+                    }
+                    else if(!response.value) {
+                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_SENT, _resultMode));
+                    }
+                }
+            });
+        }
+        catch(LocalException ex) {
+            _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_EXCEPTION, ex));
+        }
+    }
+
+    private void updateProxy() {
+        if(_proxy != null) {
+            return;
+        }
+
+        String s = "hello:tcp -h " + BuildConfig.ICE_APP_HOST + " -p 10000:ssl -h " + BuildConfig.ICE_APP_HOST + " -p 10001:udp -h " + BuildConfig.ICE_APP_HOST  + " -p 10000";
+
+        ObjectPrx prx = _communicator.stringToProxy(s);
+        prx = _mode.apply(prx);
+        _proxy = HelloPrx.uncheckedCast(prx);
+    }
+
 }

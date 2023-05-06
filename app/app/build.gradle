@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.zeroc.gradle.ice-builder.slice' version '1.5.0'
 }
 
 android {
@@ -20,10 +21,12 @@ android {
         debug {
             buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
             buildConfigField "String", "NLP_APP_ADDRESS", "\"http://192.168.1.56:6000\""
+            buildConfigField "String", "ICE_APP_HOST", "\"192.168.1.56\""
         }
         release {
             buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
             buildConfigField "String", "NLP_APP_ADDRESS", "\"http://192.168.1.56:6000\""
+            buildConfigField "String", "ICE_APP_HOST", "\"192.168.1.56\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -54,4 +57,7 @@ dependencies {
     implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
 
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
+
+    implementation 'com.zeroc:ice:3.7.8'
+    implementation "com.zeroc:icessl:3.7.8"
 }
