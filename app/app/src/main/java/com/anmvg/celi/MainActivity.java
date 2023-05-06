@@ -19,7 +19,7 @@ import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.anmvg.celi.Demo.*;
+import com.anmvg.celi.SOAP.*;
 import com.zeroc.Ice.Communicator;
 import com.zeroc.Ice.Connection;
 import com.zeroc.Ice.InitializationData;
@@ -27,8 +27,6 @@ import com.zeroc.Ice.InvocationFuture;
 import com.zeroc.Ice.LocalException;
 import com.zeroc.Ice.ObjectPrx;
 import com.zeroc.Ice.Util;
-
-import java.util.concurrent.CompletableFuture;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -40,13 +38,10 @@ public class MainActivity extends AppCompatActivity {
     public static final int MSG_READY = 1;
     public static final int MSG_EXCEPTION = 2;
     public static final int MSG_RESPONSE = 3;
-    public static final int MSG_SENDING = 4;
-    public static final int MSG_SENT = 5;
     private Handler _uiHandler;
     private Communicator _communicator;
-    private HelloPrx _proxy = null;
+    private MusicPlayerPrx _proxy = null;
     private InvocationFuture<?> _result;
-    private DeliveryMode _resultMode;
     private final DeliveryMode _mode = DeliveryMode.TWOWAY;
 
 
@@ -187,61 +182,57 @@ public class MainActivity extends AppCompatActivity {
         LocalException ex;
     }
 
-    static class BooleanHolder {
-        boolean value;
-    }
-
-    void sayHelloAsync() {
+    void playMusic(String filename) {
         try {
             updateProxy();
             if(_proxy == null || _result != null) {
                 return;
             }
 
-            _resultMode = _mode;
-            final BooleanHolder response = new BooleanHolder();
-            _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_SENDING));
-            CompletableFuture<Void> r = _proxy.sayHelloAsync(0);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                r.whenComplete((result, ex) -> {
-                    // There is no ordering guarantee between sent, response/exception.
-                    response.value = true;
+                _proxy.playMusicAsync(filename).whenComplete((result, ex) -> {
                     if(ex != null) {
                         _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_EXCEPTION, ex));
                     }
-                    else {
-                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_RESPONSE));
-                    }
                 });
             }
-
-            _result = Util.getInvocationFuture(r);
-            _result.whenSent((sentSynchronously, ex) -> {
-                if(ex == null) {
-                    if(_resultMode.isOneway()) {
-                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_RESPONSE));
-                    }
-                    else if(!response.value) {
-                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_SENT, _resultMode));
-                    }
-                }
-            });
         }
         catch(LocalException ex) {
             _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_EXCEPTION, ex));
         }
     }
 
+    void stopMusic() {
+        try {
+            updateProxy();
+            if(_proxy == null || _result != null) {
+                return;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                _proxy.stopMusicAsync().whenComplete((result, ex) -> {
+                    if(ex != null) {
+                        _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_EXCEPTION, ex));
+                    }
+                });
+            }
+        }
+        catch(LocalException ex) {
+            _uiHandler.sendMessage(_uiHandler.obtainMessage(MSG_EXCEPTION, ex));
+        }
+    }
+
+
     private void updateProxy() {
         if(_proxy != null) {
             return;
         }
 
-        String s = "hello:tcp -h " + BuildConfig.ICE_APP_HOST + " -p 10000:ssl -h " + BuildConfig.ICE_APP_HOST + " -p 10001:udp -h " + BuildConfig.ICE_APP_HOST  + " -p 10000";
+        String s = "musicplayer:tcp -h " + BuildConfig.ICE_APP_HOST + " -p 10000:ssl -h " + BuildConfig.ICE_APP_HOST + " -p 10001:udp -h " + BuildConfig.ICE_APP_HOST  + " -p 10000";
 
         ObjectPrx prx = _communicator.stringToProxy(s);
         prx = _mode.apply(prx);
-        _proxy = HelloPrx.uncheckedCast(prx);
+        _proxy = MusicPlayerPrx.uncheckedCast(prx);
     }
 
 }

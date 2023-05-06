@@ -111,29 +111,22 @@ public class ListenerFragment extends Fragment {
         // Listen button behavior
         rippleBg = binding.rippleBg;
         binding.listenButton.setOnClickListener(view1 -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("musicName", "demain");
-            NavHostFragment.findNavController(ListenerFragment.this)
-                    .navigate(R.id.action_ListenerFragment_to_PlayerFragment, bundle);
+            listening = !listening;
+            binding.listenButton.setText(listening ? getString(R.string.listen_button_text_stop) : getString(R.string.listen_button_text_start));
+            binding.helpLabel.setText(listening ? getString(R.string.press_stop) : getString(R.string.press_talk));
 
-//            ((MainActivity)requireActivity()).sayHelloAsync();
-//
-//            listening = !listening;
-//            binding.listenButton.setText(listening ? getString(R.string.listen_button_text_stop) : getString(R.string.listen_button_text_start));
-//            binding.helpLabel.setText(listening ? getString(R.string.press_stop) : getString(R.string.press_talk));
-//
-//            if (listening) {
-//                rippleBg.startRippleAnimation();
-//            } else {
-//                rippleBg.stopRippleAnimation();
-//            }
-//
-//            onRecord(listening);
-//
-//            if (!listening) {
-//                binding.helpLabel.setText(getString(R.string.press_processing));
-//                uploadVoiceFile();
-//            }
+            if (listening) {
+                rippleBg.startRippleAnimation();
+            } else {
+                rippleBg.stopRippleAnimation();
+            }
+
+            onRecord(listening);
+
+            if (!listening) {
+                binding.helpLabel.setText(getString(R.string.press_processing));
+                uploadVoiceFile();
+            }
         });
     }
 

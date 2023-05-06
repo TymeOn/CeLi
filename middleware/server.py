@@ -102,6 +102,7 @@ class MusicPlayerI(SOAP.MusicPlayer):
 
     # Permet de lancer un fichier MP3 avec VLC
     def playMusic(self, filename, current):
+        print(filename)
         musicFile = uploadPath + '/' + filename + '.mp3'
 
         if not fileExists(musicFile):
@@ -109,7 +110,7 @@ class MusicPlayerI(SOAP.MusicPlayer):
 
         media = self.player.media_new(musicFile)
 
-        media.add_option('sout=#rtp{mux=ts,ttl=10,port=4000,sdp=rtsp://127.0.0.1:4000/lowSpotify}')
+        media.add_option('sout=#rtp{mux=ts,ttl=10,port=7000,sdp=rtsp://192.168.200.238:7000/lowSpotify}')
         media.add_option('--sout-keep')
         media.add_option('--no-sout-all')
         media.get_mrl()

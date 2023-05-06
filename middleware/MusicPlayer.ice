@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+["java:package:com.anmvg.celi"]
 module SOAP
 {
     sequence<string> list;

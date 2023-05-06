@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +22,8 @@ import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
+import java.util.ArrayList;
+
 
 public class PlayerFragment extends Fragment {
 
@@ -32,9 +33,9 @@ public class PlayerFragment extends Fragment {
     private ImageButton playPauseButton;
     private LibVLC libVlc;
     private MediaPlayer mediaPlayer;
-    private Media media;
     private boolean isPlaying = false;
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
+    private String musicName;
 
     @Override
     public View onCreateView(
@@ -49,7 +50,12 @@ public class PlayerFragment extends Fragment {
         playerStatus = binding.playerStatus;
         playPauseButton = binding.playPauseButton;
 
-        libVlc = new LibVLC(this.requireContext());
+
+        final ArrayList<String> args = new ArrayList<>();
+        args.add("-vvv");
+        args.add("--file-caching=2000");
+        args.add("--rtsp-tcp");
+        libVlc = new LibVLC(this.requireContext(), args);
         mediaPlayer = new MediaPlayer(libVlc);
 
         playerStatus.setMax(100);
@@ -61,8 +67,14 @@ public class PlayerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.backButton.setOnClickListener(view1 -> NavHostFragment.findNavController(PlayerFragment.this)
-                .navigate(R.id.action_PlayerFragment_to_ListenerFragment));
+        assert getArguments() != null;
+        musicName = getArguments().getString("musicName");
+
+        binding.backButton.setOnClickListener(view1 -> {
+            ((MainActivity) requireActivity()).stopMusic();
+            NavHostFragment.findNavController(PlayerFragment.this)
+                    .navigate(R.id.action_PlayerFragment_to_ListenerFragment);
+        });
 
         playPauseButton.setOnClickListener(view1 -> {
             if (isPlaying) {
@@ -76,13 +88,6 @@ public class PlayerFragment extends Fragment {
         });
 
         prepareMediaPlayer();
-
-//        playerStatus.setOnTouchListener((view1, motionEvent) -> {
-//            int playPosition = ((int)mediaPlayer.getLength() / 100) * playerStatus.getProgress();
-//            mediaPlayer.navigate(playPosition);
-//            currentTime.setText(millisecondsToTimer((long) mediaPlayer.getPosition()));
-//            return false;
-//        });
 
         mediaPlayer.setEventListener(event -> {
             switch (event.type) {
@@ -108,31 +113,34 @@ public class PlayerFragment extends Fragment {
                     break;
             }
         });
-
-        assert getArguments() != null;
-        Log.d("PLAYER", getArguments().getString("musicName"));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-
-        // TODO : MANAGE THE PLAYER AFTER THE FRAGMENT IS LEFT
+        ((MainActivity)requireActivity()).stopMusic();
     }
 
     private void prepareMediaPlayer() {
         try {
-            media = new Media(libVlc, Uri.parse("rtsp://192.168.1.56:4000/SOUP"));
+            ((MainActivity)requireActivity()).playMusic(musicName);
+            Media media = new Media(libVlc, Uri.parse(BuildConfig.VLC_RTSP_ADDRESS));
+            media.setHWDecoderEnabled(true, false);
+            media.addOption(":network-caching=150");
+            media.addOption(":clock-jitter=0");
             mediaPlayer.setMedia(media);
             media.parse(Media.Parse.FetchNetwork);
+            mediaPlayer.play();
+
+            playPauseButton.setImageResource(R.drawable.ic_baseline_pause_24);
             totalTime.setText(millisecondsToTimer(media.getDuration()));
         } catch (Exception e) {
             Toast.makeText(this.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
-    private Runnable updater = new Runnable() {
+    private final Runnable updater = new Runnable() {
         @Override
         public void run() {
             updatePlayerStatus();
@@ -143,13 +151,12 @@ public class PlayerFragment extends Fragment {
 
     private void updatePlayerStatus() {
         if (isPlaying) {
-            // playerStatus.setProgress((int) ((mediaPlayer.getTime() / media.getDuration()) * 100));
             handler.postDelayed(updater, 1000);
         }
     }
 
     public String millisecondsToTimer(long milliseconds) {
-        String rtnTimer = "";
+        String rtnTimer;
 
         int hours = (int) (milliseconds / (1000 * 60 * 60));
         int minutes = (int) (milliseconds % (1000 * 60 * 60)) / (1000* 60);

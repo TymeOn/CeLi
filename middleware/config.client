@@ -12,7 +12,7 @@ MusicPlayer.Proxy=musicplayer:tcp -p 10000:udp -p 10000:ssl -p 10001
 #
 # Only connect to the localhost interface by default.
 #
-Ice.Default.Host=localhost
+Ice.Default.Host=192.168.200.238
 
 #
 # Warn about connection exceptions
