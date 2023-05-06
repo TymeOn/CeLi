@@ -28,7 +28,7 @@ import java.util.ArrayList;
 public class PlayerFragment extends Fragment {
 
     private FragmentPlayerBinding binding;
-    private TextView currentTime, totalTime;
+    private TextView musicTitle, currentTime, totalTime;
     private SeekBar playerStatus;
     private ImageButton playPauseButton;
     private LibVLC libVlc;
@@ -45,11 +45,11 @@ public class PlayerFragment extends Fragment {
     ) {
         binding = FragmentPlayerBinding.inflate(inflater, container, false);
 
+        musicTitle = binding.musicTitle;
         currentTime = binding.currentTime;
         totalTime = binding.totalTime;
         playerStatus = binding.playerStatus;
         playPauseButton = binding.playPauseButton;
-
 
         final ArrayList<String> args = new ArrayList<>();
         args.add("-vvv");
@@ -69,6 +69,9 @@ public class PlayerFragment extends Fragment {
 
         assert getArguments() != null;
         musicName = getArguments().getString("musicName");
+        String musicTitleText = musicName.replace("-", " ");
+        musicTitleText = musicTitleText.substring(0, 1).toUpperCase() + musicTitleText.substring(1);
+        musicTitle.setText(musicTitleText);
 
         binding.backButton.setOnClickListener(view1 -> {
             ((MainActivity) requireActivity()).stopMusic();
