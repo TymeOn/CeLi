@@ -19,16 +19,16 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
-            buildConfigField "String", "NLP_APP_ADDRESS", "\"http://192.168.200.238:6000\""
-            buildConfigField "String", "ICE_APP_HOST", "\"192.168.200.238\""
-            buildConfigField "String", "VLC_RTSP_ADDRESS", "\"rtsp://192.168.200.238:7000/lowSpotify\""
+            buildConfigField "String", "ASR_APP_ADDRESS", "\"http://10.126.4.245:5000\""
+            buildConfigField "String", "NLP_APP_ADDRESS", "\"http://10.122.3.239:6000\""
+            buildConfigField "String", "ICE_APP_HOST", "\"10.122.3.239\""
+            buildConfigField "String", "VLC_RTSP_ADDRESS", "\"rtsp://10.122.3.239:7000/lowSpotify\""
         }
         release {
-            buildConfigField "String", "ASR_APP_ADDRESS", "\"http://192.168.200.238:5000\""
-            buildConfigField "String", "NLP_APP_ADDRESS", "\"http://192.168.200.238:6000\""
-            buildConfigField "String", "ICE_APP_HOST", "\"192.168.200.238\""
-            buildConfigField "String", "VLC_RTSP_ADDRESS", "\"rtsp://192.168.200.238:7000/lowSpotify\""
+            buildConfigField "String", "ASR_APP_ADDRESS", "\"http://10.126.4.245:5000\""
+            buildConfigField "String", "NLP_APP_ADDRESS", "\"http://10.122.3.239:6000\""
+            buildConfigField "String", "ICE_APP_HOST", "\"10.122.3.239\""
+            buildConfigField "String", "VLC_RTSP_ADDRESS", "\"rtsp://10.122.3.239:7000/lowSpotify\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

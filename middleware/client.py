@@ -21,7 +21,7 @@ class ClientPlayer:
         self.matches = None
         self.vlcInstance = vlc.Instance()
         self.player = self.vlcInstance.media_player_new()
-        self.player.set_mrl('rtsp://192.168.200.238:7000/lowSpotify')
+        self.player.set_mrl('rtsp://10.122.3.239:7000/lowSpotify')
         self.musicFileList = musicPlayer.searchMusic('')
 
     def pause(self):

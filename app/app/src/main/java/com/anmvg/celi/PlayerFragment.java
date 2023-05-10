@@ -74,6 +74,7 @@ public class PlayerFragment extends Fragment {
         musicTitle.setText(musicTitleText);
 
         binding.backButton.setOnClickListener(view1 -> {
+            mediaPlayer.stop();
             ((MainActivity) requireActivity()).stopMusic();
             NavHostFragment.findNavController(PlayerFragment.this)
                     .navigate(R.id.action_PlayerFragment_to_ListenerFragment);
